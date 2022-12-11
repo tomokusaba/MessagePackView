@@ -1,9 +1,11 @@
-﻿using MessagePack;
+﻿using MemoryPack;
+using MessagePack;
 using System;
 using System.Collections.Generic;
 
 namespace NewDatasourceTest
 {
+    [MemoryPackable]
     [MessagePackObject(keyAsPropertyName: true)]
     public partial class Yubin
     {

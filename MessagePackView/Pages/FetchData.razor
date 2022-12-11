@@ -1,57 +1,39 @@
 ﻿@page "/fetchdata"
-@inject HttpClient Http
+@inject HttpClient http
+@using System.Net.Http
+@using MemoryPack;
+@using NewDatasourceTest;
+<h1>MessagePack</h1>
 
-<PageTitle>Weather forecast</PageTitle>
-
-<h1>Weather forecast</h1>
-
-<p>This component demonstrates fetching data from the server.</p>
-
-@if (forecasts == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<QuickGrid Items="Yubins">
+    <PropertyColumn Property="@(c => c.Yubin7)" Sortable="true" />
+    <PropertyColumn Property="@(c => c.Todofuken)" Sortable="true" />
+    <PropertyColumn Property="@(c => c.City)" Sortable="true" />
+    <PropertyColumn Property="@(c => c.Tyo)" Sortable="true" />
+    <PropertyColumn Property="@(c => c.Flg1)" Sortable="true" />
+    <PropertyColumn Property="@(c => c.Flg2)" Sortable="true" />
+    <PropertyColumn Property="@(c => c.Flg3)" Sortable="true" />
+</QuickGrid>
 
 @code {
-    private WeatherForecast[]? forecasts;
-
-    protected override async Task OnInitializedAsync()
+    private IQueryable<Yubin>? Yubins;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
-    }
-
-    public class WeatherForecast
-    {
-        public DateOnly Date { get; set; }
-
-        public int TemperatureC { get; set; }
-
-        public string? Summary { get; set; }
-
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        if (firstRender)
+        {
+            try
+            {
+                var data = await http.GetByteArrayAsync(@"https://musewiki.net/YubinAPI/memorypack");
+                if (data != null)
+                {
+                    Yubins = (MemoryPackSerializer.Deserialize<List<Yubin>>(data))!.AsQueryable();
+                }
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
     }
 }
